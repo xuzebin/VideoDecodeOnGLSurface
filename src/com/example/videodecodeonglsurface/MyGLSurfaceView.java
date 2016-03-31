@@ -66,6 +66,7 @@ public class MyGLSurfaceView extends GLSurfaceView {
 	
 	void stopRendering() {
 		renderer.release();
+		renderer = null;
 	}
 	
 	

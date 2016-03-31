@@ -8,15 +8,33 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.example.videodecodeonglsurface.MainActivity" >
 
-    <FrameLayout
-        android:id="@+id/frameLayout1"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent" >
+        <Button
+            android:id="@+id/play_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:text="Play" 
+            android:onClick="click_to_play" />
 
         <com.example.videodecodeonglsurface.MyGLSurfaceView
             android:id="@+id/glsurfaceview"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-    </FrameLayout>
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/play_btn"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/stop_btn" />
+
+        <Button
+            android:id="@+id/stop_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/play_btn"
+            android:layout_alignBottom="@+id/play_btn"
+            android:layout_alignRight="@+id/glsurfaceview"
+            android:text="Stop" 
+            android:onClick="click_to_stop"
+            />
 
 </RelativeLayout>

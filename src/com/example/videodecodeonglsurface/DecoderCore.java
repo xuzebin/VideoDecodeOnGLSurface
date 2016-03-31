@@ -36,11 +36,46 @@ public class DecoderCore {
     private int mVideoHeight;
     
     private int sampleNumber;
+//    private boolean isStop;
+//    private boolean isReplay;
+    
+    SpeedControlCallback mCallback;//control playback speed and (TODO: loop playback)
+    
+    protected boolean stopThread = false;//control play and stop
+    
+    private static final long SLEEP_SLICE = 10;
 
+    /**
+     * video playback control callback when rendering video frames.  The DecoderCore client must
+     * provide one of these.
+     */
+    public interface SpeedControlCallback {
+    	
+        /**
+         * Called immediately before the frame is rendered.
+         * @param presentationTimeUsec The desired presentation time, in microseconds.
+         */
+        void controlTime(long presentationTimeUsec);
 
-    DecoderCore(File videoFile, Surface outputSurface) {
+        /**
+         * Called after the last frame of a looped movie has been rendered.  This allows the
+         * callback to adjust its expectations of the next presentation time stamp.
+         */
+        void loopReset();
+        
+        /**
+         * To avoid wrong fast play when replaying the video. 
+         * Must be called before and after stopping the video
+         * it calculates the time for sleeping and update the PTS
+         * @param sleepTime time cost on sleeping, needs to be compensated
+         */
+        void updatePTS(long sleepTime);
+    }
+
+    DecoderCore(File videoFile, Surface outputSurface, SpeedControlCallback callback) {
     	mVideoFile = videoFile;
     	mOutputSurface = outputSurface;
+    	mCallback = callback;
 
     	sampleNumber = 0;
     	
@@ -52,9 +87,10 @@ public class DecoderCore {
 		}
     }
     
-    DecoderCore(AssetFileDescriptor assetFileDescriptor, Surface outputSurface) {
+    DecoderCore(AssetFileDescriptor assetFileDescriptor, Surface outputSurface, SpeedControlCallback callback) {
     	mAssetFileDescriptor = assetFileDescriptor;
     	mOutputSurface = outputSurface;
+    	mCallback = callback;
 
     	sampleNumber = 0;
     	
@@ -117,7 +153,12 @@ public class DecoderCore {
         boolean inputDone = false;
         long startTime = System.currentTimeMillis();
         while (!outputDone) {
-        	
+			if (stopThread) {//stop playing
+				Log.d(TAG, "stop thread");
+				release();
+				return false;
+			}
+			
         	//deal with inputBuffer
         	if (!inputDone) {
         		//Retrieve the index of an input buffer to be filled with valid data 
@@ -174,28 +215,77 @@ public class DecoderCore {
         			}
         				
         			//a simple trick to control frame rate: sleep until it matches the PTS of video
-        			while (mBufferInfo.presentationTimeUs / 1000 > System.currentTimeMillis() - startTime) {
-        				try {
-							Thread.sleep(10);
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-        			}
-	
+//        			while (mBufferInfo.presentationTimeUs / 1000 > System.currentTimeMillis() - startTime) {
+//        				try {
+//							Thread.sleep(10);
+//						} catch (InterruptedException e) {
+//							e.printStackTrace();
+//						}
+//        			}
+    
+        			//time control based on PTS
+        			if (mBufferInfo.size != 0 && mCallback != null) {
+        				mCallback.controlTime(mBufferInfo.presentationTimeUs);
+                    }
         			//--------------------outputBufIndex >= 0---------------------------------
         			//send the buffer to the output surface.
             		//surface will return the buffer to the codec
         			//once the buffer is no longer used 
             		decoder.releaseOutputBuffer(outputBufIndex, true);
             		Log.d(TAG, "send buffer to surface, index=" + outputBufIndex);
+            		
+            		
+            		
+            		if ((mBufferInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
+                		Log.d(TAG, "deocode end --- end of stream");
+                		/**
+                		 * stop the thread at the end of the video
+                		 * TODO: add loop playback if necessary
+                		 */
+                		stopThread = true;
+                		release();
+                		return false;
+            		}
+            		
+            		//replay whenever true
+//            		if (isReplay) {
+//                    	extractor.seekTo(0, MediaExtractor.SEEK_TO_CLOSEST_SYNC);
+//                        inputDone = false;
+//                        decoder.flush();    // reset decoder state
+//                        mCallback.loopReset(); 
+//                        isReplay = false;
+//                        Log.i(TAG, "replay");
+//                        break;
+//                        
+//            		}
+//            		if (isStop) {
+//            			int sleepLoop = 0;
+//            			while (!isReplay) {
+//                        	try {
+//								Thread.sleep(SLEEP_SLICE);
+//								sleepLoop++;
+//							} catch (InterruptedException e) {
+//								// TODO Auto-generated catch block
+//								e.printStackTrace();
+//							}
+//                        	Log.i(TAG, "stop looping : wait for replay" + sleepLoop);
+//                        }       
+//            			mCallback.updatePTS(sleepLoop * SLEEP_SLICE);
+//            			extractor.seekTo(0, MediaExtractor.SEEK_TO_CLOSEST_SYNC);
+//                        inputDone = false;   
+//                        decoder.flush();    // reset decoder state
+//                        mCallback.loopReset(); 
+//                        
+//                        isStop = false;
+//                        isReplay = false;
+//                        break;
+//            		}
+
+            		
         			break;
         		}
         	}
-        	if ((mBufferInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
-        		Log.d(TAG, "deocode end --- end of stream");
-        		break;
-        	}
- 	
+
         }
         Log.d(TAG, "decoding end");
         return true;
@@ -221,6 +311,8 @@ public class DecoderCore {
     	Log.i(TAG, "VideoWidth=" + mVideoWidth + ", VideoHeight=" + mVideoHeight);
     	Log.i(TAG, "Total frame number: " + sampleNumber);
     }
+    
+	
 
 
 }

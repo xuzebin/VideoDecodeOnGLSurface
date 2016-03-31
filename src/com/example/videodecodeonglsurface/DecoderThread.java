@@ -16,21 +16,25 @@ import android.content.res.AssetFileDescriptor;
  */
 
 public class DecoderThread extends DecoderCore implements Runnable {
-	private static final String TAG = "DecoderCore";
-	DecoderThread(File videoFile, Surface outputSurface) {
-		super(videoFile, outputSurface);	
+	private static final String TAG = "DecoderThread";
+	
+	DecoderThread(File videoFile, Surface outputSurface, SpeedControlCallback cb) {
+		super(videoFile, outputSurface, cb);	
 	}
 	
-	DecoderThread(AssetFileDescriptor afd, Surface outputSurface) {
-		super(afd, outputSurface);	
+	DecoderThread(AssetFileDescriptor afd, Surface outputSurface, SpeedControlCallback cb) {
+		super(afd, outputSurface, cb);	
 	}
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
 		long start = System.currentTimeMillis();
-		doDecode();	//core components for decoding
+		doDecode(); //core components for decoding
 		Log.i(TAG, "decode time: " + (System.currentTimeMillis() - start) / 1000.0f + "s");
 		dumpVideoInfo();
+		
+		Log.i(TAG, "thread end..");
+
 	}
 	
 	void startPlaying() {
@@ -38,6 +42,9 @@ public class DecoderThread extends DecoderCore implements Runnable {
 	}
 	
 	void stopPlaying() {
-		release();//release the decoding resources.
+		stopThread = true;
+//		release();//release the decoding resources.		
 	}
+	
+
 }
