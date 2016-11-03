@@ -8,6 +8,7 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.example.videodecodeonglsurface.MainActivity" >
 
+<<<<<<< HEAD
         <Button
             android:id="@+id/play_btn"
             android:layout_width="wrap_content"
@@ -36,5 +37,17 @@
             android:text="Stop" 
             android:onClick="click_to_stop"
             />
+=======
+    <FrameLayout
+        android:id="@+id/frameLayout1"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" >
+
+        <com.example.videodecodeonglsurface.MyGLSurfaceView
+            android:id="@+id/glsurfaceview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </FrameLayout>
+>>>>>>> origin/master
 
 </RelativeLayout>

@@ -1,11 +1,17 @@
 package com.example.videodecodeonglsurface;
 
 import java.io.File;
+<<<<<<< HEAD
 import java.io.FileDescriptor;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import android.content.res.AssetFileDescriptor;
+=======
+import java.io.IOException;
+import java.nio.ByteBuffer;
+
+>>>>>>> origin/master
 import android.media.Image;
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
@@ -28,7 +34,10 @@ public class DecoderCore {
 
 	private MediaCodec.BufferInfo mBufferInfo = new MediaCodec.BufferInfo();
 	private File mVideoFile;
+<<<<<<< HEAD
 	private AssetFileDescriptor mAssetFileDescriptor;
+=======
+>>>>>>> origin/master
 	private Surface mOutputSurface;
     private MediaExtractor extractor = null;
     private MediaCodec decoder = null;
@@ -36,6 +45,7 @@ public class DecoderCore {
     private int mVideoHeight;
     
     private int sampleNumber;
+<<<<<<< HEAD
 //    private boolean isStop;
 //    private boolean isReplay;
     
@@ -91,6 +101,13 @@ public class DecoderCore {
     	mAssetFileDescriptor = assetFileDescriptor;
     	mOutputSurface = outputSurface;
     	mCallback = callback;
+=======
+
+
+    DecoderCore(File videoFile, Surface outputSurface) {
+    	mVideoFile = videoFile;
+    	mOutputSurface = outputSurface;
+>>>>>>> origin/master
 
     	sampleNumber = 0;
     	
@@ -104,6 +121,7 @@ public class DecoderCore {
 
     void prepareDecode() throws IOException {
     	Log.d(TAG, "preparing decoder");
+<<<<<<< HEAD
     	
         //begin
         extractor = new MediaExtractor();
@@ -112,6 +130,16 @@ public class DecoderCore {
         //load video from res/raw/
 		extractor.setDataSource(mAssetFileDescriptor.getFileDescriptor(), 
 				mAssetFileDescriptor.getStartOffset(), mAssetFileDescriptor.getLength());
+=======
+    	//check if video file can be read.
+        if (!mVideoFile.canRead()) {
+        	Log.w(TAG, "Unable to read " + mVideoFile);
+            return;
+        }
+        //begin
+        extractor = new MediaExtractor();
+		extractor.setDataSource(mVideoFile.toString());
+>>>>>>> origin/master
      
         // Select the first video track we find, ignore the rest.
         for (int i = 0; i < extractor.getTrackCount(); i++) {
@@ -153,12 +181,16 @@ public class DecoderCore {
         boolean inputDone = false;
         long startTime = System.currentTimeMillis();
         while (!outputDone) {
+<<<<<<< HEAD
 			if (stopThread) {//stop playing
 				Log.d(TAG, "stop thread");
 				release();
 				return false;
 			}
 			
+=======
+        	
+>>>>>>> origin/master
         	//deal with inputBuffer
         	if (!inputDone) {
         		//Retrieve the index of an input buffer to be filled with valid data 
@@ -215,6 +247,7 @@ public class DecoderCore {
         			}
         				
         			//a simple trick to control frame rate: sleep until it matches the PTS of video
+<<<<<<< HEAD
 //        			while (mBufferInfo.presentationTimeUs / 1000 > System.currentTimeMillis() - startTime) {
 //        				try {
 //							Thread.sleep(10);
@@ -227,12 +260,23 @@ public class DecoderCore {
         			if (mBufferInfo.size != 0 && mCallback != null) {
         				mCallback.controlTime(mBufferInfo.presentationTimeUs);
                     }
+=======
+        			while (mBufferInfo.presentationTimeUs / 1000 > System.currentTimeMillis() - startTime) {
+        				try {
+							Thread.sleep(10);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+        			}
+	
+>>>>>>> origin/master
         			//--------------------outputBufIndex >= 0---------------------------------
         			//send the buffer to the output surface.
             		//surface will return the buffer to the codec
         			//once the buffer is no longer used 
             		decoder.releaseOutputBuffer(outputBufIndex, true);
             		Log.d(TAG, "send buffer to surface, index=" + outputBufIndex);
+<<<<<<< HEAD
             		
             		
             		
@@ -286,6 +330,16 @@ public class DecoderCore {
         		}
         	}
 
+=======
+        			break;
+        		}
+        	}
+        	if ((mBufferInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
+        		Log.d(TAG, "deocode end --- end of stream");
+        		break;
+        	}
+ 	
+>>>>>>> origin/master
         }
         Log.d(TAG, "decoding end");
         return true;
@@ -311,8 +365,11 @@ public class DecoderCore {
     	Log.i(TAG, "VideoWidth=" + mVideoWidth + ", VideoHeight=" + mVideoHeight);
     	Log.i(TAG, "Total frame number: " + sampleNumber);
     }
+<<<<<<< HEAD
     
 	
+=======
+>>>>>>> origin/master
 
 
 }

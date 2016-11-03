@@ -66,7 +66,9 @@ public class MyGLSurfaceView extends GLSurfaceView {
 	
 	void stopRendering() {
 		renderer.release();
+
 		renderer = null;
+
 	}
 	
 	
@@ -125,7 +127,11 @@ public class MyGLSurfaceView extends GLSurfaceView {
 				mSurfaceTexture.updateTexImage();
 				draw();
 			}
+
 		}
+
+}
+
 		
 		public SurfaceTexture createSurfaceTexture() {
 			textureId = createVideoTexture();
